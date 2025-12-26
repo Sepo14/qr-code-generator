@@ -6,13 +6,16 @@ import { QRCodeSVG , QRCodeCanvas } from "qrcode.react";
 
 export default function Page({ params }: { params: Promise<{ qrcode: string }> }) {
   const { qrcode } = use(params);
-  const qrRef = useRef(null)
+  const data = decodeURIComponent(qrcode)
+  const qrRef = useRef<HTMLDivElement | null>(null)
   const[clicked ,setCliked] = useState(false);
   const[clickedDownload ,setClikedDownload] = useState(false);
   
 
   const downloadQR = () => {
-    const canvas = qrRef.current.querySelector("canvas");
+    if (!qrRef.current) return;
+    const canvas = qrRef.current.querySelector("canvas") as HTMLCanvasElement | null;
+    if (!canvas) return;
 
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
@@ -23,7 +26,7 @@ export default function Page({ params }: { params: Promise<{ qrcode: string }> }
   }
   
   const copyLink = async () => {
-    await navigator.clipboard.writeText(qrcode);
+    await navigator.clipboard.writeText(data);
     setCliked(true);
     setTimeout(() => setCliked(false),2000)
   };
@@ -32,7 +35,7 @@ export default function Page({ params }: { params: Promise<{ qrcode: string }> }
     <main className="h-full w-full flex flex-col justify-center items-center gap-20 px-4">
       <Image src={'/Logo.svg'} width={150} height={100} alt="QR image"></Image>
       <div ref={qrRef} className="bg-(--color1)/25 rounded-full p-8">
-        <QRCodeCanvas className="bg-white p-5 rounded-3xl" value={qrcode} size={256} />
+        <QRCodeCanvas className="bg-white p-5 rounded-3xl" value={data} size={256} />
       </div>
       <div className="flex max-w-full w-80 justify-evenly">
         <div className="bg-(--color2) relative flex justify-center rounded-xl hover:bg-(--color5) transition cursor-pointer">
